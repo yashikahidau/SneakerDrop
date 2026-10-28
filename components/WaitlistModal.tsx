@@ -6,7 +6,7 @@ import { joinWaitlist } from "@/actions/waitlist-actions";
 import type { Sneaker } from "@/types";
 
 interface Props { snk: Sneaker | null; onClose: () => void; }
-const emailPattern = /^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function WaitlistModal({ snk, onClose }: Props) {
   const sneaker = snk;
@@ -38,7 +38,7 @@ export default function WaitlistModal({ snk, onClose }: Props) {
   return (
     <AnimatePresence>
       {sneaker && (
-        <motion.div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/75 backdrop-blur-xl md:items-center md:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+        <motion.div className="pointer-events-auto fixed inset-0 z-[110] flex items-end justify-center bg-black/75 backdrop-blur-xl md:items-center md:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
           <motion.div role="dialog" aria-modal="true" aria-labelledby="waitlist-title" initial={{ opacity: 0, y: 40, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: .98 }} className="relative w-full max-w-[840px] overflow-hidden border border-white/10 bg-[#121214]/95 shadow-[0_30px_100px_rgba(0,0,0,.7)] backdrop-blur-2xl md:grid md:grid-cols-[.75fr_1fr] md:rounded-sm">
             <button onClick={onClose} aria-label="Close waitlist" className="absolute right-4 top-4 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/30 text-white/60"><X size={16} /></button>
             <div className="relative hidden min-h-[510px] overflow-hidden md:block">

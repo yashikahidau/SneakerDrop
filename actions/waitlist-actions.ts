@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin, supabase } from "@/lib/supabase";
 import { isAdminSession } from "@/lib/admin-auth";
-import type { WaitlistEntry, WaitlistSubmission } from "@/types";
+import type { WaitlistSubmission } from "@/types";
 
 export interface WaitlistActionResponse<T = null> {
   success: boolean;
@@ -12,12 +12,14 @@ export interface WaitlistActionResponse<T = null> {
   error?: string;
 }
 
-const EMAIL_PATTERN = /^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i;
+// Deliberately use a basic format check here. Full email validity is determined
+// by confirmation/delivery, and strict RFC regexes reject legitimate addresses.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function joinWaitlist(
   sneakerId: string,
   email: string,
-): Promise<WaitlistActionResponse<WaitlistEntry>> {
+): Promise<WaitlistActionResponse> {
   const normalizedSneakerId = sneakerId?.trim();
   const normalizedEmail = email?.trim().toLowerCase();
 
@@ -39,40 +41,30 @@ export async function joinWaitlist(
       .maybeSingle();
 
     if (sneakerError) {
+      console.error("[joinWaitlist] sneaker lookup failed:", {
+        code: sneakerError.code,
+        message: sneakerError.message,
+        details: sneakerError.details,
+        hint: sneakerError.hint,
+      });
       return { success: false, message: "Unable to verify the sneaker.", error: sneakerError.message };
     }
     if (!sneaker) {
       return { success: false, message: "Sneaker not found.", error: "Sneaker not found." };
     }
 
-    const { data: existingEntry, error: duplicateError } = await supabase
-      .from("waitlist")
-      .select("id")
-      .eq("sneaker_id", normalizedSneakerId)
-      .ilike("email", normalizedEmail)
-      .maybeSingle();
-
-    if (duplicateError) {
-      return { success: false, message: "Unable to check the waitlist.", error: duplicateError.message };
-    }
-    if (existingEntry) {
-      return {
-        success: false,
-        message: "This email is already registered for this sneaker.",
-        error: "Duplicate waitlist signup.",
-      };
-    }
-
-    const { data: entry, error: insertError } = await supabase
-      .from("waitlist")
-      .insert({
-        sneaker_id: normalizedSneakerId,
-        email: normalizedEmail,
-      })
-      .select("*")
-      .single();
+    const { error: insertError } = await supabase.from("waitlist").insert({
+      sneaker_id: normalizedSneakerId,
+      email: normalizedEmail,
+    });
 
     if (insertError) {
+      console.error("[joinWaitlist] Supabase insert failed:", {
+        code: insertError.code,
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+      });
       if (insertError.code === "23505") {
         return {
           success: false,
@@ -87,9 +79,12 @@ export async function joinWaitlist(
     return {
       success: true,
       message: "Successfully joined the waitlist.",
-      data: entry as WaitlistEntry,
     };
   } catch (error) {
+    console.error(
+      "[joinWaitlist] unexpected error:",
+      error instanceof Error ? error.message : error,
+    );
     return {
       success: false,
       message: "An unexpected error occurred while joining the waitlist.",

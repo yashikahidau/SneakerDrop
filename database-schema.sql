@@ -17,9 +17,11 @@ create table if not exists public.waitlist (
   sneaker_id uuid not null references public.sneakers(id) on delete cascade,
   email text not null,
   created_at timestamptz not null default timezone('utc', now()),
-  constraint waitlist_sneaker_email_unique unique (sneaker_id, email),
-  constraint waitlist_email_format check (email ~* '^[A-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$')
+  constraint waitlist_sneaker_email_unique unique (sneaker_id, email)
 );
+
+-- Upgrade existing databases created with the earlier strict email constraint.
+alter table public.waitlist drop constraint if exists waitlist_email_format;
 
 create index if not exists waitlist_sneaker_id_idx on public.waitlist(sneaker_id);
 create index if not exists waitlist_created_at_idx on public.waitlist(created_at desc);
@@ -39,3 +41,21 @@ create policy "Visitors may join the waitlist"
   on public.waitlist for insert
   to anon, authenticated
   with check (true);
+
+-- Remove restrictive INSERT policies that would override the intended visitor
+-- insert policy. Other command policies, such as SELECT, remain unchanged.
+do $$
+declare
+  policy_name text;
+begin
+  for policy_name in
+    select pol.polname
+    from pg_policy as pol
+    where pol.polrelid = 'public.waitlist'::regclass
+      and not pol.polpermissive
+      and pol.polcmd in ('a', '*')
+  loop
+    execute format('drop policy %I on public.waitlist', policy_name);
+  end loop;
+end;
+$$;
