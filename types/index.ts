@@ -17,3 +17,10 @@ export interface WaitlistEntry {
   email: string;
   created_at: string;
 }
+
+export interface WaitlistSubmission extends WaitlistEntry {
+  sneaker: Pick<Sneaker, "id" | "name" | "image_url" | "price" | "availability_status"> | null;
+}
+
+export type SneakerCreateInput = Omit<Sneaker, "id" | "created_at">;
+export type SneakerUpdateInput = Partial<SneakerCreateInput>;

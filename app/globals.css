@@ -17,7 +17,8 @@
   --color-gold: var(--gold);
   --color-gold-deep: var(--gold-deep);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-space-grotesk);
+  --font-display: var(--font-syne);
 }
 
 * {
@@ -34,7 +35,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-space-grotesk), Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -72,6 +73,61 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gold);
+}
+
+@media (pointer: fine) {
+  body, a, button, input { cursor: none; }
+}
+
+.font-display, .text-outline {
+  font-family: var(--font-syne), Arial, Helvetica, sans-serif;
+}
+
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  position: absolute;
+  right: 0;
+  bottom: -6px;
+  left: 0;
+  height: 1px;
+  content: "";
+  transform: scaleX(0);
+  transform-origin: right;
+  background: #f0d98c;
+  transition: transform 280ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: clamp(48px, 6vw, 96px) clamp(48px, 6vw, 96px);
+  mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+}
+
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.38);
+  text-stroke: 1px rgba(255,255,255,.38);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 767px) {
+  .text-outline { -webkit-text-stroke-width: 1px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
