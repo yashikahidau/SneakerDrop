@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin, supabase } from "@/lib/supabase";
+import { isAdminSession } from "@/lib/admin-auth";
 import type {
   AvailabilityStatus,
   Sneaker,
@@ -86,10 +87,14 @@ export async function getSneakerById(id: string): Promise<ActionResponse<Sneaker
 export async function createSneaker(
   data: SneakerCreateInput,
 ): Promise<ActionResponse<Sneaker>> {
+  if (!(await isAdminSession())) {
+    return { success: false, error: "Unauthorized administrator action." };
+  }
   const validationError = validateCreateData(data);
   if (validationError) return { success: false, error: validationError };
 
   try {
+    const adminSupabase = getSupabaseAdmin();
     const payload: SneakerCreateInput = {
       name: data.name.trim(),
       tagline: data.tagline.trim(),
@@ -99,7 +104,7 @@ export async function createSneaker(
       availability_status: data.availability_status,
     };
 
-    const { data: sneaker, error } = await supabase
+    const { data: sneaker, error } = await adminSupabase
       .from("sneakers")
       .insert(payload)
       .select("*")
@@ -122,6 +127,9 @@ export async function updateSneaker(
   id: string,
   data: SneakerUpdateInput,
 ): Promise<ActionResponse<Sneaker>> {
+  if (!(await isAdminSession())) {
+    return { success: false, error: "Unauthorized administrator action." };
+  }
   if (!id?.trim()) return { success: false, error: "Sneaker ID is required." };
   if (!data || Object.keys(data).length === 0) {
     return { success: false, error: "At least one field is required for update." };
@@ -136,7 +144,8 @@ export async function updateSneaker(
   }
 
   try {
-    const { data: sneaker, error } = await supabase
+    const adminSupabase = getSupabaseAdmin();
+    const { data: sneaker, error } = await adminSupabase
       .from("sneakers")
       .update(payload)
       .eq("id", id.trim())
@@ -158,10 +167,14 @@ export async function updateSneaker(
 }
 
 export async function deleteSneaker(id: string): Promise<ActionResponse> {
+  if (!(await isAdminSession())) {
+    return { success: false, error: "Unauthorized administrator action." };
+  }
   if (!id?.trim()) return { success: false, error: "Sneaker ID is required." };
 
   try {
-    const { error, count } = await supabase
+    const adminSupabase = getSupabaseAdmin();
+    const { error, count } = await adminSupabase
       .from("sneakers")
       .delete({ count: "exact" })
       .eq("id", id.trim());

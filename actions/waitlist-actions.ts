@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin, supabase } from "@/lib/supabase";
+import { isAdminSession } from "@/lib/admin-auth";
 import type { WaitlistEntry, WaitlistSubmission } from "@/types";
 
 export interface WaitlistActionResponse<T = null> {
@@ -100,8 +101,12 @@ export async function joinWaitlist(
 export async function getWaitlistSubmissions(): Promise<
   WaitlistActionResponse<WaitlistSubmission[]>
 > {
+  if (!(await isAdminSession())) {
+    return { success: false, message: "Unauthorized administrator action.", error: "Unauthorized administrator action." };
+  }
   try {
-    const { data, error } = await supabase
+    const adminSupabase = getSupabaseAdmin();
+    const { data, error } = await adminSupabase
       .from("waitlist")
       .select(`
         id,
