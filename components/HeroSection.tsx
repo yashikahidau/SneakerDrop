@@ -33,7 +33,7 @@ export default function HeroSection() {
       <div className="absolute left-[-15%] top-[-10%] h-[55vw] w-[55vw] rounded-full bg-[#D3AE37]/5 blur-[100px] md:blur-[140px]" aria-hidden="true" />
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-col justify-between py-8 sm:py-10 md:py-14">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[9px] uppercase tracking-[.25em] text-white/40 sm:tracking-[.35em]">Edition 01 — 2026</p>
+          <p className="text-[9px] uppercase tracking-[.25em] text-white/40 sm:tracking-[.35em]">Edition 01 / 2026</p>
           <p className="hidden items-center gap-2 text-[9px] uppercase tracking-[.35em] text-white/40 sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#F0D98C] shadow-[0_0_12px_#F0D98C]" />Selections live</p>
         </div>
         <div className="relative z-20 my-auto py-12 sm:py-16 md:py-12">

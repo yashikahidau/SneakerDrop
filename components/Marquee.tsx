@@ -23,7 +23,7 @@ export default function Marquee() {
   return (
     <section aria-label="Limited edition drop. Secure your access. SneakerDrop 2026. Rare by design." className="overflow-hidden border-y border-white/10 bg-[#0c0c0e] py-5 text-white/75 sm:py-6">
       <p className="sr-only">Limited edition drop. Secure your access. SneakerDrop 2026. Rare by design.</p>
-      <motion.div aria-hidden="true" className="flex w-max items-center font-display text-lg font-bold uppercase leading-none tracking-[-.035em] text-[#F0D98C] sm:text-2xl lg:text-3xl" animate={prefersReducedMotion ? undefined : { x: ["0%", "-50%"] }} transition={{ repeat: Infinity, duration: 18, ease: "linear" }}>
+      <motion.div aria-hidden="true" className="flex w-max items-center font-display text-lg font-bold uppercase leading-none tracking-[-.035em] text-[#F0D98C] will-change-transform sm:text-2xl lg:text-3xl" animate={prefersReducedMotion ? undefined : { x: ["0%", "-50%"] }} transition={{ repeat: Infinity, duration: 18, ease: "linear" }}>
         <div className="flex items-center"><TickerItems /></div>
         <div className="flex items-center"><TickerItems /></div>
       </motion.div>

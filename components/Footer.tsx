@@ -21,7 +21,7 @@ export default function Footer() {
   };
 
   return (
-    <footer id="manifesto" className="border-t border-white/10 bg-[#09090b] px-4 pb-7 pt-16 sm:px-5 md:px-8 md:pt-24">
+    <footer id="manifesto" className="relative isolate border-t border-white/10 bg-[#09090b] px-4 pb-7 pt-20 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-[#D3AE37]/45 before:to-transparent before:content-[''] sm:px-5 sm:pt-24 md:px-8 md:pt-28">
       <div className="mx-auto max-w-[1600px]">
         <div className="grid gap-12 lg:grid-cols-[1fr_.42fr] lg:gap-14">
           <div>

@@ -81,9 +81,9 @@ function SneakerQuickView({ sneaker, onClose, onRequestAccess }: { sneaker: Snea
 
         <div className="relative min-h-[44svh] overflow-hidden bg-[radial-gradient(circle_at_50%_42%,#2b2b2e_0%,#141416_62%,#09090b_100%)] sm:min-h-[52svh] lg:min-h-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={sneaker.image_url} alt={`${sneaker.name}, ${sneaker.tagline}`} className="absolute inset-0 h-full w-full object-cover" />
+          <img src={sneaker.image_url} alt={`${sneaker.name}, ${sneaker.tagline}`} fetchPriority="high" decoding="async" sizes="(min-width: 1024px) 55vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#09090b]/75 via-transparent to-[#09090b]/10" />
-          <p className="absolute bottom-5 left-5 max-w-[70%] text-[9px] uppercase tracking-[.25em] text-white/55 sm:bottom-8 sm:left-8">SneakerDrop · Edition 01</p>
+          <p className="absolute bottom-5 left-5 max-w-[70%] text-[9px] uppercase tracking-[.25em] text-white/55 sm:bottom-8 sm:left-8">SneakerDrop / Edition 01</p>
           <p className="absolute bottom-5 right-5 flex items-center gap-2 text-[9px] uppercase tracking-[.2em] text-[#F0D98C]/75 sm:bottom-8 sm:right-8"><span className="h-1.5 w-1.5 rounded-full bg-[#F0D98C] shadow-[0_0_12px_#F0D98C]" />{availabilityLabel[sneaker.availability_status]}</p>
         </div>
 
@@ -101,7 +101,7 @@ function SneakerQuickView({ sneaker, onClose, onRequestAccess }: { sneaker: Snea
             <div>
               <p className="mb-3 text-[9px] uppercase tracking-[.24em] text-[#F0D98C]/75">Release profile</p>
               <p className="text-sm leading-6 text-white/75">{availabilityLabel[sneaker.availability_status]}</p>
-              <p className="mt-1 text-xs leading-5 text-white/35">Curated release · 2026</p>
+              <p className="mt-1 text-xs leading-5 text-white/35">Curated release / 2026</p>
             </div>
             <div>
               <p className="mb-3 text-[9px] uppercase tracking-[.24em] text-[#F0D98C]/75">Design notes</p>

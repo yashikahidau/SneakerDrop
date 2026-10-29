@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 
-type CursorLabel = "VIEW" | "DRAG" | null;
+type CursorLabel = "VIEW" | "EXPLORE" | "DRAG" | null;
 
 function playCue(context: AudioContext, kind: "hover" | "select") {
   if (context.state === "suspended") {
@@ -58,7 +58,7 @@ export default function CustomCursor() {
       const visualTarget = target.closest(".sneaker-card, .sneaker-card img, [data-cursor='view']");
       const interactiveTarget = target.closest("a, button, input, [data-cursor='active'], .sneaker-card");
       const requestedLabel = labelTarget?.dataset.cursorLabel?.toUpperCase();
-      setLabel(visualTarget ? requestedLabel === "DRAG" ? "DRAG" : "VIEW" : null);
+      setLabel(visualTarget ? requestedLabel === "DRAG" ? "DRAG" : requestedLabel === "EXPLORE" ? "EXPLORE" : "VIEW" : null);
       setInteractive(Boolean(interactiveTarget));
 
       if (target.closest("[data-sound-toggle]")) return;
@@ -89,16 +89,26 @@ export default function CustomCursor() {
     if (soundOn) {
       soundEnabled.current = false;
       setSoundOn(false);
-      if (audioContext.current?.state === "running") await audioContext.current.suspend();
+      try {
+        if (audioContext.current?.state === "running") await audioContext.current.suspend();
+      } catch {
+        // The UI remains off even if the browser cannot suspend its audio context.
+      }
       return;
     }
 
-    const context = audioContext.current ?? new window.AudioContext();
-    audioContext.current = context;
-    await context.resume();
-    soundEnabled.current = true;
-    setSoundOn(true);
-    playCue(context, "select");
+    try {
+      const context = audioContext.current ?? new window.AudioContext();
+      audioContext.current = context;
+      await context.resume();
+      if (context.state !== "running") return;
+      soundEnabled.current = true;
+      setSoundOn(true);
+      playCue(context, "select");
+    } catch {
+      soundEnabled.current = false;
+      setSoundOn(false);
+    }
   };
 
   const expanded = label !== null;

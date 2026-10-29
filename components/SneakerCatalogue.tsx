@@ -34,22 +34,38 @@ export default function SneakerCatalogue() {
   const closeWaitlist = useCallback(() => setWaitlistItem(null), []);
 
   return (
-    <section id="drops" className="relative min-w-0 overflow-hidden px-4 py-20 sm:px-5 sm:py-24 md:px-8 md:py-32">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-[18rem] top-1/4 h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(211,174,55,.055),transparent_68%)]" />
-      <div className="relative mx-auto min-w-0 max-w-[1600px]">
-        <div className="mb-9 flex min-w-0 items-end justify-between gap-4 border-b border-white/10 pb-6 sm:mb-12 sm:pb-7">
-          <div className="min-w-0"><p className="mb-3 text-[9px] uppercase tracking-[.28em] text-[#F0D98C] sm:tracking-[.35em]">Current catalogue</p><h2 className="font-display text-[clamp(2.3rem,11vw,6rem)] font-bold uppercase leading-none tracking-[-.055em] text-white sm:text-[clamp(2.3rem,6vw,6rem)]">The Edit</h2></div>
-          <p className="hidden shrink-0 text-right text-[10px] uppercase tracking-[.2em] text-white/35 md:block">{loading ? "Synchronizing" : `${String(sneakers.length).padStart(2, "0")} releases`}</p>
-        </div>
+    <section id="drops" className="relative min-w-0 overflow-hidden px-4 py-20 sm:px-6 sm:py-24 md:px-8 md:py-32">
+      <div aria-hidden="true" className="pointer-events-none absolute -right-[18rem] top-[15%] h-[40rem] w-[40rem] rounded-full bg-[radial-gradient(circle,rgba(211,174,55,.06),transparent_68%)]" />
+      <div className="relative mx-auto min-w-0 max-w-[1720px]">
+        <header className="mb-10 flex items-end justify-between gap-4 border-b border-white/10 pb-6 sm:mb-14 sm:pb-8">
+          <div><p className="mb-3 text-[9px] uppercase tracking-[.3em] text-[#F0D98C] sm:tracking-[.36em]">Current catalogue / Issue 01</p><h2 className="font-display text-[clamp(2.5rem,9vw,7rem)] font-bold uppercase leading-[.88] tracking-[-.065em] text-white">The Edit</h2></div>
+          <p className="hidden pb-1 text-right text-[9px] uppercase tracking-[.2em] text-white/35 sm:block">{loading ? "Synchronizing releases" : `${String(sneakers.length).padStart(2, "0")} curated releases`}</p>
+        </header>
 
         {loading ? (
-          <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((item) => <div key={item} className="aspect-[4/5] animate-pulse rounded-[2px] border border-white/5 bg-[#121214]" />)}</div>
+          <div className="space-y-12 sm:space-y-16">
+            <div className="aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)] sm:aspect-[16/8]" />
+            <div className="grid gap-x-10 gap-y-14 md:grid-cols-2"><div className="aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)]" /><div className="aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)] md:mt-20" /></div>
+          </div>
         ) : error ? (
-          <div role="alert" className="border border-white/10 bg-[#121214] p-6 text-sm text-white/55 sm:p-10">{error}</div>
+          <div role="alert" className="border-y border-white/10 py-10 text-sm text-white/55">{error}</div>
         ) : sneakers.length === 0 ? (
-          <div className="border border-white/10 bg-[#121214] p-8 text-center sm:p-12"><p className="font-display text-2xl font-bold uppercase text-white/70">The next edit is assembling</p><p className="mt-3 text-sm text-white/35">Return shortly for the release.</p></div>
+          <div className="border-y border-white/10 py-12 sm:py-16"><p className="font-display text-2xl font-bold uppercase text-white/70 sm:text-3xl">The next edit is assembling</p><p className="mt-3 max-w-md text-sm leading-6 text-white/40">Return for the next curated release.</p></div>
         ) : (
-          <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:grid-cols-3">{sneakers.map((sneaker, index) => <SneakerCard key={sneaker.id} snk={sneaker} index={index} onView={setQuickView} />)}</div>
+          <div className="space-y-14 sm:space-y-20 lg:space-y-24">
+            <SneakerCard snk={sneakers[0]} index={0} layout="feature" onView={setQuickView} />
+            {sneakers.length > 1 && (
+              <div className="grid min-w-0 gap-x-7 gap-y-14 sm:gap-x-10 sm:gap-y-20 md:grid-cols-2 lg:gap-x-16">
+                {sneakers.slice(1).map((sneaker, restIndex) => {
+                  const last = restIndex === sneakers.length - 2;
+                  const isSingle = sneakers.length === 2;
+                  const isOddRemainder = (sneakers.length - 1) % 2 === 1;
+                  const layout = isSingle || (isOddRemainder && last) ? "wide" : "editorial";
+                  return <SneakerCard key={sneaker.id} snk={sneaker} index={restIndex + 1} layout={layout} offset={restIndex % 2 === 1 && layout === "editorial"} onView={setQuickView} />;
+                })}
+              </div>
+            )}
+          </div>
         )}
       </div>
       <SneakerModal snk={quickView} onClose={closeQuickView} onJoin={openWaitlist} />
