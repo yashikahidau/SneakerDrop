@@ -7,10 +7,15 @@ create table if not exists public.sneakers (
   price numeric(10, 2) not null check (price >= 0),
   image_url text not null,
   description text not null,
+  material_notes text,
+  construction_notes text,
   availability_status text not null default 'coming_soon'
     check (availability_status in ('available', 'coming_soon', 'sold_out')),
   created_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.sneakers add column if not exists material_notes text;
+alter table public.sneakers add column if not exists construction_notes text;
 
 create table if not exists public.waitlist (
   id uuid primary key default gen_random_uuid(),

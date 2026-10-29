@@ -25,6 +25,8 @@ function validateCreateData(data: SneakerCreateInput): string | null {
   if (!Number.isFinite(data.price) || data.price < 0) return "Price must be a valid non-negative number.";
   if (!data.image_url?.trim()) return "Image URL is required.";
   if (!data.description?.trim()) return "Description is required.";
+  if (data.material_notes !== undefined && data.material_notes !== null && typeof data.material_notes !== "string") return "Material notes must be text.";
+  if (data.construction_notes !== undefined && data.construction_notes !== null && typeof data.construction_notes !== "string") return "Construction notes must be text.";
   if (!isAvailabilityStatus(data.availability_status)) return "Availability status is invalid.";
   return null;
 }
@@ -37,6 +39,8 @@ function validateUpdateData(data: SneakerUpdateInput): string | null {
   }
   if (data.image_url !== undefined && !data.image_url.trim()) return "Image URL cannot be empty.";
   if (data.description !== undefined && !data.description.trim()) return "Description cannot be empty.";
+  if (data.material_notes !== undefined && data.material_notes !== null && typeof data.material_notes !== "string") return "Material notes must be text.";
+  if (data.construction_notes !== undefined && data.construction_notes !== null && typeof data.construction_notes !== "string") return "Construction notes must be text.";
   if (
     data.availability_status !== undefined &&
     !isAvailabilityStatus(data.availability_status)
@@ -101,6 +105,8 @@ export async function createSneaker(
       price: data.price,
       image_url: data.image_url.trim(),
       description: data.description.trim(),
+      material_notes: data.material_notes?.trim() || null,
+      construction_notes: data.construction_notes?.trim() || null,
       availability_status: data.availability_status,
     };
 
@@ -139,7 +145,7 @@ export async function updateSneaker(
   if (validationError) return { success: false, error: validationError };
 
   const payload: SneakerUpdateInput = { ...data };
-  for (const key of ["name", "tagline", "image_url", "description"] as const) {
+  for (const key of ["name", "tagline", "image_url", "description", "material_notes", "construction_notes"] as const) {
     if (typeof payload[key] === "string") payload[key] = payload[key].trim();
   }
 

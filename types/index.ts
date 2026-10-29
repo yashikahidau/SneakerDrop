@@ -7,6 +7,8 @@ export interface Sneaker {
   price: number;
   image_url: string;
   description: string;
+  material_notes?: string | null;
+  construction_notes?: string | null;
   availability_status: AvailabilityStatus;
   created_at: string;
 }

@@ -8,7 +8,7 @@ import { getWaitlistSubmissions } from "@/actions/waitlist-actions";
 import { logoutAdmin } from "@/actions/admin-auth-actions";
 
 const emptyForm: SneakerCreateInput = {
-  name: "", tagline: "", price: 0, image_url: "", description: "", availability_status: "coming_soon",
+  name: "", tagline: "", price: 0, image_url: "", description: "", material_notes: "", construction_notes: "", availability_status: "coming_soon",
 };
 
 export default function AdminDashboard() {
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); setMessage(""); };
   const openEdit = (sneaker: Sneaker) => {
     setEditingId(sneaker.id);
-    setForm({ name: sneaker.name, tagline: sneaker.tagline, price: sneaker.price, image_url: sneaker.image_url, description: sneaker.description, availability_status: sneaker.availability_status });
+    setForm({ name: sneaker.name, tagline: sneaker.tagline, price: sneaker.price, image_url: sneaker.image_url, description: sneaker.description, material_notes: sneaker.material_notes ?? "", construction_notes: sneaker.construction_notes ?? "", availability_status: sneaker.availability_status });
     setShowForm(true); setMessage("");
   };
 
@@ -114,6 +114,8 @@ export default function AdminDashboard() {
               <Field label="Availability"><select value={form.availability_status} onChange={(e) => setForm({ ...form, availability_status: e.target.value as AvailabilityStatus })}><option value="coming_soon">Limited Drop</option><option value="available">In Stock</option><option value="sold_out">Sold Out</option></select></Field>
               <div className="md:col-span-2"><Field label="Image URL"><input required type="url" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} /></Field></div>
               <div className="md:col-span-2"><Field label="Description"><textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field></div>
+              <Field label="Material notes (optional)"><textarea rows={3} value={form.material_notes ?? ""} onChange={(e) => setForm({ ...form, material_notes: e.target.value })} placeholder="Materials verified for this release" /></Field>
+              <Field label="Construction notes (optional)"><textarea rows={3} value={form.construction_notes ?? ""} onChange={(e) => setForm({ ...form, construction_notes: e.target.value })} placeholder="Construction details verified for this release" /></Field>
             </div>
             <button disabled={saving} className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-[#F0D98C] py-4 text-[10px] font-bold uppercase tracking-[.18em] text-[#09090b] disabled:opacity-40">{saving ? <><LoaderCircle size={15} className="animate-spin" />Saving</> : editingId ? "Save changes" : "Create sneaker"}</button>
           </form>
