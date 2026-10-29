@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
 import type { Sneaker } from "@/types";
 
 interface Props {
@@ -21,6 +21,10 @@ export default function SneakerCard({ snk, index, onView }: Props) {
   const status = availability[snk.availability_status];
   const price = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(snk.price);
   const open = () => onView(snk);
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    event.currentTarget.focus({ preventScroll: true });
+    open();
+  };
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -29,7 +33,7 @@ export default function SneakerCard({ snk, index, onView }: Props) {
   };
 
   return (
-    <motion.article role="button" tabIndex={0} aria-label={`View ${snk.name} details`} data-cursor="active" data-cursor-label="VIEW" onClick={open} onKeyDown={handleKeyDown} className={`sneaker-card group relative min-w-0 cursor-pointer overflow-hidden rounded-[2px] border border-white/[.08] bg-[#121214] text-left transition-colors duration-500 hover:border-[#D3AE37]/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#F0D98C] ${index === 0 ? "md:col-span-2" : ""}`} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-10%" }} transition={{ duration: 0.75, delay: (index % 3) * 0.09, ease: [0.22, 1, 0.36, 1] }}>
+    <motion.article role="button" tabIndex={0} aria-haspopup="dialog" aria-label={`View ${snk.name} details`} data-cursor="active" data-cursor-label="VIEW" onClick={handleClick} onKeyDown={handleKeyDown} className={`sneaker-card group relative min-w-0 cursor-pointer overflow-hidden rounded-[2px] border border-white/[.08] bg-[#121214] text-left transition-colors duration-500 hover:border-[#D3AE37]/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#F0D98C] ${index === 0 ? "md:col-span-2" : ""}`} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-10%" }} transition={{ duration: 0.75, delay: (index % 3) * 0.09, ease: [0.22, 1, 0.36, 1] }}>
       <div className="relative aspect-[4/3] overflow-hidden bg-[radial-gradient(circle_at_50%_45%,#27272a_0%,#121214_68%)]">
         <div className="absolute left-3 top-3 z-10 flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-3 py-2 text-[9px] font-bold uppercase tracking-[.16em] text-white/75 backdrop-blur-xl sm:left-5 sm:top-5"><span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />{status.label}</div>
         {/* eslint-disable-next-line @next/next/no-img-element */}

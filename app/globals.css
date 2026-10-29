@@ -76,7 +76,7 @@ body {
 }
 
 @media (pointer: fine) {
-  body, a, button, input { cursor: none; }
+  body, a, button, input, .sneaker-card { cursor: none; }
 }
 
 .font-display, .text-outline {
@@ -85,6 +85,7 @@ body {
 
 .nav-link {
   position: relative;
+  transition: color 220ms cubic-bezier(.22, 1, .36, 1), transform 220ms cubic-bezier(.22, 1, .36, 1);
 }
 
 .nav-link::after {
@@ -94,6 +95,7 @@ body {
   left: 0;
   height: 1px;
   content: "";
+  pointer-events: none;
   transform: scaleX(0);
   transform-origin: right;
   background: #f0d98c;
@@ -101,6 +103,16 @@ body {
 }
 
 .nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: var(--gold);
+}
+
+.nav-link:focus-visible::after {
   transform: scaleX(1);
   transform-origin: left;
 }

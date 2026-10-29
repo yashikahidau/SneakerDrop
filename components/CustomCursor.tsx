@@ -7,23 +7,27 @@ import { Volume2, VolumeX } from "lucide-react";
 type CursorLabel = "VIEW" | "DRAG" | null;
 
 function playCue(context: AudioContext, kind: "hover" | "select") {
+  if (context.state === "suspended") {
+    void context.resume().then(() => playCue(context, kind)).catch(() => undefined);
+    return;
+  }
   if (context.state !== "running") return;
   const oscillator = context.createOscillator();
   const gain = context.createGain();
   const now = context.currentTime;
-  const startFrequency = kind === "select" ? 740 : 980;
-  const endFrequency = kind === "select" ? 430 : 680;
-  const peak = kind === "select" ? 0.012 : 0.006;
+  const startFrequency = kind === "select" ? 920 : 840;
+  const endFrequency = kind === "select" ? 560 : 760;
+  const peak = kind === "select" ? 0.024 : 0.014;
   oscillator.type = "triangle";
   oscillator.frequency.setValueAtTime(startFrequency, now);
-  oscillator.frequency.exponentialRampToValueAtTime(endFrequency, now + 0.035);
+  oscillator.frequency.exponentialRampToValueAtTime(endFrequency, now + 0.028);
   gain.gain.setValueAtTime(0.0001, now);
   gain.gain.exponentialRampToValueAtTime(peak, now + 0.004);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
   oscillator.connect(gain);
   gain.connect(context.destination);
   oscillator.start(now);
-  oscillator.stop(now + 0.06);
+  oscillator.stop(now + 0.05);
   oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
 }
 
@@ -64,7 +68,7 @@ export default function CustomCursor() {
     };
     const click = (event: MouseEvent) => {
       if (!(event.target instanceof Element) || event.target.closest("[data-sound-toggle]")) return;
-      if (event.target.closest("button, [data-audio-cue], .sneaker-card") && soundEnabled.current && audioContext.current) playCue(audioContext.current, "select");
+      if (event.target.closest("button, a, [data-audio-cue], .sneaker-card") && soundEnabled.current && audioContext.current) playCue(audioContext.current, "select");
     };
     const leave = () => setVisible(false);
 
