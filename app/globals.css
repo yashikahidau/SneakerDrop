@@ -138,6 +138,32 @@ body {
   -webkit-line-clamp: 2;
 }
 
+.sneaker-card {
+  isolation: isolate;
+}
+
+.sneaker-card::after {
+  position: absolute;
+  z-index: 50;
+  inset: 0;
+  padding: 1px;
+  border-radius: 2px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(211, 174, 55, .46), rgba(240, 217, 140, .12) 36%, transparent 72%);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  transition: opacity 420ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.sneaker-card:hover::after,
+.sneaker-card:focus-visible::after {
+  opacity: 1;
+}
+
 @media (max-width: 767px) {
   .text-outline { -webkit-text-stroke-width: 1px; }
 }

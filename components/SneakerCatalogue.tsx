@@ -3,9 +3,23 @@
 import { useCallback, useEffect, useState } from "react";
 import { getSneakers } from "@/actions/sneaker-actions";
 import type { Sneaker } from "@/types";
-import SneakerCard from "./SneakerCard";
+import SneakerCard, { type SneakerCardLayout } from "./SneakerCard";
 import SneakerModal from "./SneakerModal";
 import WaitlistModal from "./WaitlistModal";
+
+function getLayout(index: number, count: number): SneakerCardLayout {
+  if (count === 1) return "banner";
+  if (count === 2) return index === 0 ? "feature" : "banner";
+  if (index === 0) return "feature";
+  if (index === 1) return "side";
+  if (index === 2) return "banner";
+
+  const remainder = count - 3;
+  const remainderIndex = index - 3;
+  if (remainder % 3 === 1 && remainderIndex === remainder - 1) return "banner";
+  if (remainder % 3 === 2 && remainderIndex === 0) return "center-tile";
+  return "tile";
+}
 
 export default function SneakerCatalogue() {
   const [sneakers, setSneakers] = useState<Sneaker[]>([]);
@@ -43,28 +57,18 @@ export default function SneakerCatalogue() {
         </header>
 
         {loading ? (
-          <div className="space-y-12 sm:space-y-16">
-            <div className="aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)] sm:aspect-[16/8]" />
-            <div className="grid gap-x-10 gap-y-14 md:grid-cols-2"><div className="aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)]" /><div className="aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)] md:mt-20" /></div>
+          <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-16">
+            <div className="col-span-1 aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)] md:col-span-2 sm:aspect-[16/8] lg:aspect-[2.15/1]" />
+            <div className="col-span-1 aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)]" />
+            <div className="col-span-1 aspect-[4/3] animate-pulse bg-[linear-gradient(120deg,#101012,#1a1a1c_48%,#101012)] md:col-span-2 lg:col-span-3 lg:aspect-[2.7/1]" />
           </div>
         ) : error ? (
           <div role="alert" className="border-y border-white/10 py-10 text-sm text-white/55">{error}</div>
         ) : sneakers.length === 0 ? (
           <div className="border-y border-white/10 py-12 sm:py-16"><p className="font-display text-2xl font-bold uppercase text-white/70 sm:text-3xl">The next edit is assembling</p><p className="mt-3 max-w-md text-sm leading-6 text-white/40">Return for the next curated release.</p></div>
         ) : (
-          <div className="space-y-14 sm:space-y-20 lg:space-y-24">
-            <SneakerCard snk={sneakers[0]} index={0} layout="feature" onView={setQuickView} />
-            {sneakers.length > 1 && (
-              <div className="grid min-w-0 gap-x-7 gap-y-14 sm:gap-x-10 sm:gap-y-20 md:grid-cols-2 lg:gap-x-16">
-                {sneakers.slice(1).map((sneaker, restIndex) => {
-                  const last = restIndex === sneakers.length - 2;
-                  const isSingle = sneakers.length === 2;
-                  const isOddRemainder = (sneakers.length - 1) % 2 === 1;
-                  const layout = isSingle || (isOddRemainder && last) ? "wide" : "editorial";
-                  return <SneakerCard key={sneaker.id} snk={sneaker} index={restIndex + 1} layout={layout} offset={restIndex % 2 === 1 && layout === "editorial"} onView={setQuickView} />;
-                })}
-              </div>
-            )}
+          <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-16">
+            {sneakers.map((sneaker, index) => <SneakerCard key={sneaker.id} snk={sneaker} index={index} layout={getLayout(index, sneakers.length)} onView={setQuickView} />)}
           </div>
         )}
       </div>
