@@ -9,7 +9,10 @@ interface Props { snk: Sneaker | null; onClose: () => void; }
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function WaitlistModal({ snk, onClose }: Props) {
-  const sneaker = snk;
+  return <AnimatePresence>{snk && <WaitlistDialog key={snk.id} sneaker={snk} onClose={onClose} />}</AnimatePresence>;
+}
+
+function WaitlistDialog({ sneaker, onClose }: { sneaker: Sneaker; onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -17,17 +20,16 @@ export default function WaitlistModal({ snk, onClose }: Props) {
   const valid = emailPattern.test(email.trim()) && email.trim().length <= 254;
 
   useEffect(() => {
-    if (!sneaker) return;
-    setEmail(""); setSuccess(false); setMessage(""); setLoading(false);
+    const previousOverflow = document.body.style.overflow;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
-    return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", onKey); };
-  }, [sneaker, onClose]);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", onKey); };
+  }, [onClose]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!sneaker || !valid) return;
+    if (!valid) return;
     setLoading(true); setMessage("");
     const result = await joinWaitlist(sneaker.id, email.trim());
     setLoading(false);
@@ -36,17 +38,15 @@ export default function WaitlistModal({ snk, onClose }: Props) {
   };
 
   return (
-    <AnimatePresence>
-      {sneaker && (
-        <motion.div className="pointer-events-auto fixed inset-0 z-[110] flex items-end justify-center bg-black/75 backdrop-blur-xl md:items-center md:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-          <motion.div role="dialog" aria-modal="true" aria-labelledby="waitlist-title" initial={{ opacity: 0, y: 40, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: .98 }} className="relative w-full max-w-[840px] overflow-hidden border border-white/10 bg-[#121214]/95 shadow-[0_30px_100px_rgba(0,0,0,.7)] backdrop-blur-2xl md:grid md:grid-cols-[.75fr_1fr] md:rounded-sm">
-            <button onClick={onClose} aria-label="Close waitlist" className="absolute right-4 top-4 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/30 text-white/60"><X size={16} /></button>
+        <motion.div className="pointer-events-auto fixed inset-0 z-[110] flex items-end justify-center overflow-y-auto bg-black/75 p-0 backdrop-blur-xl sm:items-center sm:p-4 md:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+          <motion.div role="dialog" aria-modal="true" aria-labelledby="waitlist-title" initial={{ opacity: 0, y: 40, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: .98 }} className="relative my-auto max-h-[min(92svh,900px)] w-full max-w-[840px] overflow-y-auto rounded-t-2xl border border-white/10 bg-[#121214]/95 shadow-[0_30px_100px_rgba(0,0,0,.7)] backdrop-blur-2xl sm:rounded-sm md:grid md:grid-cols-[.75fr_1fr]">
+            <button onClick={onClose} aria-label="Close waitlist" className="absolute right-3 top-3 z-20 grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-black/60 text-white transition-colors hover:border-[#F0D98C]/50 hover:text-[#F0D98C] active:scale-95 sm:right-4 sm:top-4"><X size={18} /></button>
             <div className="relative hidden min-h-[510px] overflow-hidden md:block">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sneaker.image_url} alt={sneaker.name} className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent" />
             </div>
-            <div className="flex min-h-[440px] flex-col justify-center p-7 md:min-h-[510px] md:p-12">
+            <div className="flex min-h-[min(75svh,440px)] flex-col justify-center px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-16 sm:min-h-[440px] sm:p-7 md:min-h-[510px] md:p-12">
               <AnimatePresence mode="wait">
                 {success ? (
                   <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
@@ -76,7 +76,5 @@ export default function WaitlistModal({ snk, onClose }: Props) {
             </div>
           </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
   );
 }
