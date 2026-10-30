@@ -75,7 +75,7 @@ export default function AdminDashboard() {
   const visibleSneakers = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     if (!query) return sneakers;
-    return sneakers.filter((sneaker) => [sneaker.name, sneaker.tagline, sneaker.category].some((value) => value?.toLocaleLowerCase().includes(query) ?? false));
+    return sneakers.filter((sneaker) => [sneaker.name, sneaker.tagline].some((value) => value.toLocaleLowerCase().includes(query)));
   }, [search, sneakers]);
 
   const openCreate = () => { setEditingId(null); setForm({ ...emptyForm }); setEditorOpen(true); setMessage(""); };
@@ -181,7 +181,6 @@ export default function AdminDashboard() {
                     <div className="min-w-0 flex-1">
                       <p className="break-words font-display text-sm font-bold uppercase leading-tight tracking-[-.02em] text-white">{sneaker.name}</p>
                       <p className="mt-1 break-words text-[10px] leading-4 text-white/40">{sneaker.tagline}</p>
-                      {sneaker.category && <span className="mt-2 inline-flex max-w-full break-words border border-white/10 bg-white/[.025] px-2 py-1 text-[8px] uppercase tracking-[.12em] text-white/55">{sneaker.category}</span>}
                     </div>
                     <p className="shrink-0 self-start font-display text-sm font-semibold text-[#F0D98C]">{currency.format(sneaker.price)}</p>
                   </div>
@@ -201,11 +200,10 @@ export default function AdminDashboard() {
                 </motion.article>)}
               </div>
               <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[900px] border-collapse text-left">
-                <thead><tr className="border-b border-white/[.08] text-[9px] uppercase tracking-[.18em] text-white/35"><th className="px-5 py-4 font-medium sm:px-6">Product</th><th className="px-4 py-4 font-medium">Category</th><th className="px-4 py-4 font-medium">Price</th><th className="px-4 py-4 font-medium">Availability</th><th className="px-4 py-4 font-medium">Added</th><th className="px-5 py-4 text-right font-medium sm:px-6">Manage</th></tr></thead>
+              <table className="w-full min-w-[760px] border-collapse text-left">
+                <thead><tr className="border-b border-white/[.08] text-[9px] uppercase tracking-[.18em] text-white/35"><th className="w-[38%] px-5 py-4 font-medium sm:px-6">Product</th><th className="w-[13%] px-4 py-4 font-medium">Price</th><th className="w-[21%] px-4 py-4 font-medium">Availability</th><th className="w-[13%] px-4 py-4 font-medium">Added</th><th className="w-[15%] px-5 py-4 text-right font-medium sm:px-6">Manage</th></tr></thead>
                 <tbody>{visibleSneakers.map((sneaker, index) => <motion.tr key={sneaker.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index * .035, .28) }} className="group border-b border-white/[.055] transition-colors duration-300 hover:bg-[#F0D98C]/[.035]">
                   <td className="px-5 py-4 sm:px-6"><div className="flex items-center gap-3"><div className="h-12 w-14 shrink-0 overflow-hidden border border-white/10 bg-white/[.04]"><img src={sneaker.image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="min-w-0"><p className="max-w-[270px] truncate font-display text-sm font-bold uppercase tracking-[-.02em] text-white">{sneaker.name}</p><p className="mt-1 max-w-[270px] truncate text-[10px] text-white/35">{sneaker.tagline}</p></div></div></td>
-                  <td className="px-4 py-4">{sneaker.category && <span className="border border-white/10 bg-white/[.025] px-2.5 py-1.5 text-[9px] uppercase tracking-[.12em] text-white/55">{sneaker.category}</span>}</td>
                   <td className="px-4 py-4 font-display text-sm font-semibold text-[#F0D98C]">{currency.format(sneaker.price)}</td>
                   <td className="px-4 py-4"><label className="inline-flex items-center gap-2"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusOptions.find((status) => status.value === sneaker.availability_status)?.dot ?? "bg-white/30"}`} /><select aria-label={`Change ${sneaker.name} availability`} value={sneaker.availability_status} disabled={busyStatus === sneaker.id} onChange={(event) => void changeStatus(sneaker, event.target.value as AvailabilityStatus)} className="min-h-11 max-w-[150px] bg-transparent py-2 text-[9px] uppercase tracking-[.1em] text-white/70 outline-none transition-colors hover:text-[#F0D98C] focus:text-[#F0D98C] disabled:opacity-40">{statusOptions.map((option) => <option key={option.value} value={option.value} className="bg-[#121214] text-white">{option.label}</option>)}</select>{busyStatus === sneaker.id && <LoaderCircle size={12} className="animate-spin text-[#F0D98C]" />}</label></td>
                   <td className="px-4 py-4 text-[10px] tabular-nums text-white/40">{dateFormat.format(new Date(sneaker.created_at))}</td>
