@@ -4,22 +4,16 @@ import { useCallback, useEffect, useState } from "react";
 import { getSneakers } from "@/actions/sneaker-actions";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import type { Sneaker } from "@/types";
-import SneakerCard, { type SneakerCardLayout } from "./SneakerCard";
+import SneakerCard from "./SneakerCard";
 import SneakerModal from "./SneakerModal";
 import WaitlistModal from "./WaitlistModal";
 
-function getLayout(index: number, count: number): SneakerCardLayout {
-  if (count === 1) return "banner";
-  if (count === 2) return index === 0 ? "feature" : "banner";
-  if (index === 0) return "feature";
-  if (index === 1) return "side";
-  if (index === 2) return "banner";
-
-  const remainder = count - 3;
-  const remainderIndex = index - 3;
-  if (remainder % 3 === 1 && remainderIndex === remainder - 1) return "banner";
-  if (remainder % 3 === 2 && remainderIndex === 0) return "center-tile";
-  return "tile";
+function getLayout(index: number, count: number) {
+  if (count === 1) return "banner" as const;
+  if (count === 2) return index === 0 ? "feature" as const : "banner" as const;
+  if (index === 0) return "feature" as const;
+  if (index === 1) return "side" as const;
+  return "banner" as const;
 }
 
 export default function SneakerCatalogue() {
@@ -28,6 +22,7 @@ export default function SneakerCatalogue() {
   const [waitlistItem, setWaitlistItem] = useState<Sneaker | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const displayedSneakers = sneakers.slice(0, 3);
 
   useEffect(() => {
     let mounted = true;
@@ -91,7 +86,7 @@ export default function SneakerCatalogue() {
       <div className="relative mx-auto min-w-0 max-w-[1720px]">
         <header className="mb-10 flex items-end justify-between gap-4 border-b border-white/10 pb-6 sm:mb-14 sm:pb-8">
           <div><p className="mb-3 text-[9px] uppercase tracking-[.3em] text-[#F0D98C] sm:tracking-[.36em]">Current catalogue / Issue 01</p><h2 className="font-display text-[clamp(2.5rem,9vw,7rem)] font-bold uppercase leading-[.88] tracking-[-.065em] text-white">The Edit</h2></div>
-          <p className="hidden pb-1 text-right text-[9px] uppercase tracking-[.2em] text-white/35 sm:block">{loading ? "Synchronizing releases" : `${String(sneakers.length).padStart(2, "0")} curated releases`}</p>
+          <p className="hidden pb-1 text-right text-[9px] uppercase tracking-[.2em] text-white/35 sm:block">{loading ? "Synchronizing releases" : `${String(displayedSneakers.length).padStart(2, "0")} featured releases`}</p>
         </header>
 
         {loading ? (
@@ -106,7 +101,7 @@ export default function SneakerCatalogue() {
           <div className="border-y border-white/10 py-12 sm:py-16"><p className="font-display text-2xl font-bold uppercase text-white/70 sm:text-3xl">The next edit is assembling</p><p className="mt-3 max-w-md text-sm leading-6 text-white/40">Return for the next curated release.</p></div>
         ) : (
           <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-16">
-            {sneakers.map((sneaker, index) => <SneakerCard key={sneaker.id} snk={sneaker} index={index} layout={getLayout(index, sneakers.length)} onView={setQuickView} />)}
+            {displayedSneakers.map((sneaker, index) => <SneakerCard key={sneaker.id} snk={sneaker} index={index} layout={getLayout(index, displayedSneakers.length)} onView={setQuickView} />)}
           </div>
         )}
       </div>
