@@ -40,12 +40,13 @@ The bootstrap and upgrade script is [`database-schema.sql`](./database-schema.sq
 | `id` | `uuid` | Primary key; generated with `gen_random_uuid()` |
 | `name` | `text` | Required release name |
 | `tagline` | `text` | Required editorial tagline |
+| `category` | `text` | Required category; existing rows receive the `Footwear` migration default |
 | `price` | `numeric(10,2)` | Required; non-negative check |
 | `image_url` | `text` | Required product image URL |
 | `description` | `text` | Required product description |
 | `material_notes` | `text` | Optional material details |
 | `construction_notes` | `text` | Optional construction details |
-| `availability_status` | `text` | Required; `available`, `coming_soon`, or `sold_out` (defaults to `coming_soon`) |
+| `availability_status` | `text` | Required; `available`, `coming_soon`, `sold_out`, or `archived` (defaults to `coming_soon`) |
 | `created_at` | `timestamptz` | Required UTC creation timestamp |
 
 ### `public.waitlist`
@@ -57,7 +58,7 @@ The bootstrap and upgrade script is [`database-schema.sql`](./database-schema.sq
 | `email` | `text` | Required; normalized to lowercase by the waitlist action |
 | `created_at` | `timestamptz` | Required UTC submission timestamp |
 
-The unique constraint on `(sneaker_id, email)` prevents duplicate signups for the same release at the database level. The application maps PostgreSQL unique-violation responses to a clear duplicate-signup message. Indexes support release lookup and newest-first catalogue/submission queries.
+The unique constraint on `(sneaker_id, email)` prevents duplicate signups for the same release at the database level. The application maps PostgreSQL unique-violation responses to a clear duplicate-signup message. Indexes support release lookup and newest-first catalogue/submission queries. Archived products remain available to administrators and are excluded from the public catalogue.
 
 RLS is enabled on both tables. The schema grants public and authenticated users read access to sneaker rows and insert access to waitlist rows. It does not create public waitlist read, update, or delete policies. Administrative data operations use the server-only service-role client after signed-session authorization; the service-role key bypasses RLS and must never be exposed to the browser.
 

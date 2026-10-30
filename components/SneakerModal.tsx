@@ -15,6 +15,7 @@ const availabilityLabel: Record<Sneaker["availability_status"], string> = {
   available: "Available now",
   coming_soon: "Limited release",
   sold_out: "Release archived",
+  archived: "Archived release",
 };
 
 export default function SneakerModal({ snk, onClose, onJoin }: Props) {
@@ -37,7 +38,7 @@ function SneakerQuickView({ sneaker, onClose, onRequestAccess }: { sneaker: Snea
   const closeButton = useRef<HTMLButtonElement>(null);
   const price = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(sneaker.price);
   const releaseDate = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(sneaker.created_at));
-  const soldOut = sneaker.availability_status === "sold_out";
+  const soldOut = sneaker.availability_status === "sold_out" || sneaker.availability_status === "archived";
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;

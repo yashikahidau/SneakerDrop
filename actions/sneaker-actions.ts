@@ -17,11 +17,12 @@ export interface ActionResponse<T = null> {
 }
 
 const isAvailabilityStatus = (value: unknown): value is AvailabilityStatus =>
-  value === "available" || value === "coming_soon" || value === "sold_out";
+  value === "available" || value === "coming_soon" || value === "sold_out" || value === "archived";
 
 function validateCreateData(data: SneakerCreateInput): string | null {
   if (!data.name?.trim()) return "Sneaker name is required.";
   if (!data.tagline?.trim()) return "Sneaker tagline is required.";
+  if (!data.category?.trim()) return "Sneaker category is required.";
   if (!Number.isFinite(data.price) || data.price < 0) return "Price must be a valid non-negative number.";
   if (!data.image_url?.trim()) return "Image URL is required.";
   if (!data.description?.trim()) return "Description is required.";
@@ -34,6 +35,7 @@ function validateCreateData(data: SneakerCreateInput): string | null {
 function validateUpdateData(data: SneakerUpdateInput): string | null {
   if (data.name !== undefined && !data.name.trim()) return "Sneaker name cannot be empty.";
   if (data.tagline !== undefined && !data.tagline.trim()) return "Sneaker tagline cannot be empty.";
+  if (data.category !== undefined && !data.category.trim()) return "Sneaker category cannot be empty.";
   if (data.price !== undefined && (!Number.isFinite(data.price) || data.price < 0)) {
     return "Price must be a valid non-negative number.";
   }
@@ -55,6 +57,7 @@ export async function getSneakers(): Promise<ActionResponse<Sneaker[]>> {
     const { data, error } = await supabase
       .from("sneakers")
       .select("*")
+      .neq("availability_status", "archived")
       .order("created_at", { ascending: false });
 
     if (error) return { success: false, error: error.message };
@@ -63,6 +66,28 @@ export async function getSneakers(): Promise<ActionResponse<Sneaker[]>> {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch sneakers.",
+    };
+  }
+}
+
+export async function getAdminSneakers(): Promise<ActionResponse<Sneaker[]>> {
+  if (!(await isAdminSession())) {
+    return { success: false, error: "Unauthorized administrator action." };
+  }
+
+  try {
+    const adminSupabase = getSupabaseAdmin();
+    const { data, error } = await adminSupabase
+      .from("sneakers")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) return { success: false, error: error.message };
+    return { success: true, data: (data ?? []) as Sneaker[] };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to fetch admin inventory.",
     };
   }
 }
@@ -102,6 +127,7 @@ export async function createSneaker(
     const payload: SneakerCreateInput = {
       name: data.name.trim(),
       tagline: data.tagline.trim(),
+      category: data.category.trim(),
       price: data.price,
       image_url: data.image_url.trim(),
       description: data.description.trim(),
@@ -145,7 +171,7 @@ export async function updateSneaker(
   if (validationError) return { success: false, error: validationError };
 
   const payload: SneakerUpdateInput = { ...data };
-  for (const key of ["name", "tagline", "image_url", "description", "material_notes", "construction_notes"] as const) {
+  for (const key of ["name", "tagline", "category", "image_url", "description", "material_notes", "construction_notes"] as const) {
     if (typeof payload[key] === "string") payload[key] = payload[key].trim();
   }
 

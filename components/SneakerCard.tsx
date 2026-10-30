@@ -19,6 +19,7 @@ const availability: Record<Sneaker["availability_status"], { label: string; dot:
   available: { label: "In stock", dot: "bg-emerald-400" },
   coming_soon: { label: "Limited drop", dot: "bg-[#F0D98C]" },
   sold_out: { label: "Sold out", dot: "bg-white/35" },
+  archived: { label: "Archived", dot: "bg-white/25" },
 };
 
 export default function SneakerCard({ snk, index, layout, onView }: Props) {

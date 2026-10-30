@@ -1,9 +1,10 @@
-export type AvailabilityStatus = "available" | "coming_soon" | "sold_out";
+export type AvailabilityStatus = "available" | "coming_soon" | "sold_out" | "archived";
 
 export interface Sneaker {
   id: string;
   name: string;
   tagline: string;
+  category: string;
   price: number;
   image_url: string;
   description: string;
