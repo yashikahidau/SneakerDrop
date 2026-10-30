@@ -59,8 +59,8 @@ export default function AdminLogin() {
           <div className="text-center lg:text-left">
             <p className="mb-5 text-[8px] uppercase tracking-[.3em] text-white/35 sm:text-[9px]">Access / 01 — Atelier credentials</p>
             <h1 className="font-display font-bold uppercase leading-[.8] tracking-[-.075em]">
-              <span className="block text-[clamp(2.8rem,8vw,7.5rem)] text-white">Enter the</span>
-              <span className="text-outline mt-2 block text-[clamp(4.5rem,15vw,12.5rem)] opacity-55">Atelier</span>
+              <span className="block text-3xl text-white sm:text-4xl md:text-5xl lg:text-[clamp(4.5rem,8vw,7.5rem)]">Enter the</span>
+              <span className="text-outline mt-2 block text-[clamp(3.5rem,14vw,5.5rem)] opacity-55 sm:text-[clamp(5rem,12vw,7rem)] lg:text-[clamp(5.5rem,8vw,10rem)] xl:text-[clamp(7rem,10vw,11rem)]">Atelier</span>
             </h1>
             <p className="mx-auto mt-6 max-w-md text-[13px] leading-6 text-white/45 sm:text-sm sm:leading-7 lg:mx-0">A private space for release curation and collector access.</p>
           </div>
@@ -111,7 +111,7 @@ export default function AdminLogin() {
         </div>
 
         <footer className="flex justify-center border-t border-white/10 pt-5 sm:pt-6 lg:justify-start">
-          <Link href="/" data-audio-cue className="inline-flex min-h-10 items-center gap-2 text-[8px] font-medium uppercase tracking-[.16em] text-white/40 transition-colors duration-200 ease-out hover:text-[#F0D98C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0D98C]">
+          <Link href="/" data-audio-cue className="inline-flex min-h-11 items-center gap-2 text-[8px] font-medium uppercase tracking-[.16em] text-white/40 transition-colors duration-200 ease-out hover:text-[#F0D98C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F0D98C]">
             <ArrowLeft aria-hidden="true" size={13} />Return to public showcase
           </Link>
         </footer>
