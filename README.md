@@ -127,7 +127,7 @@ The admin route and server actions verify an HMAC-signed session stored in an HT
 
 Deploy the repository to Vercel (or another platform that supports the required Next.js runtime), configure all five environment variables, and ensure the Supabase schema and RLS policies are installed.
 
-**Live deployment:** [Add the Vercel deployment URL]
+**Live deployment:** https://sneaker-drop-neon.vercel.app/
 
 ## Project structure
 
