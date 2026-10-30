@@ -14,6 +14,21 @@ export interface ActionResponse<T = null> {
   success: boolean;
   data?: T;
   error?: string;
+  warning?: string;
+}
+
+function isMissingCategoryColumn(error: { code?: string; message?: string }): boolean {
+  return (error.code === "42703" || error.code === "PGRST204") && /category/i.test(error.message ?? "");
+}
+
+function normalizeSneaker(row: unknown): Sneaker {
+  const sneaker = row as Partial<Sneaker>;
+  return {
+    ...sneaker,
+    category: typeof sneaker.category === "string" && sneaker.category.trim()
+      ? sneaker.category
+      : "Footwear",
+  } as Sneaker;
 }
 
 const isAvailabilityStatus = (value: unknown): value is AvailabilityStatus =>
@@ -61,7 +76,7 @@ export async function getSneakers(): Promise<ActionResponse<Sneaker[]>> {
       .order("created_at", { ascending: false });
 
     if (error) return { success: false, error: error.message };
-    return { success: true, data: (data ?? []) as Sneaker[] };
+    return { success: true, data: (data ?? []).map(normalizeSneaker) };
   } catch (error) {
     return {
       success: false,
@@ -83,7 +98,7 @@ export async function getAdminSneakers(): Promise<ActionResponse<Sneaker[]>> {
       .order("created_at", { ascending: false });
 
     if (error) return { success: false, error: error.message };
-    return { success: true, data: (data ?? []) as Sneaker[] };
+    return { success: true, data: (data ?? []).map(normalizeSneaker) };
   } catch (error) {
     return {
       success: false,
@@ -104,7 +119,7 @@ export async function getSneakerById(id: string): Promise<ActionResponse<Sneaker
 
     if (error) return { success: false, error: error.message };
     if (!data) return { success: false, error: "Sneaker not found." };
-    return { success: true, data: data as Sneaker };
+    return { success: true, data: normalizeSneaker(data) };
   } catch (error) {
     return {
       success: false,
@@ -136,17 +151,26 @@ export async function createSneaker(
       availability_status: data.availability_status,
     };
 
-    const { data: sneaker, error } = await adminSupabase
+    let result = await adminSupabase
       .from("sneakers")
       .insert(payload)
       .select("*")
       .single();
 
-    if (error) return { success: false, error: error.message };
+    let warning: string | undefined;
+    if (result.error && isMissingCategoryColumn(result.error)) {
+      const { category, ...legacyPayload } = payload;
+      void category;
+      result = await adminSupabase.from("sneakers").insert(legacyPayload).select("*").single();
+      warning = "Release saved with the default category. Apply database-schema.sql to enable category storage.";
+    }
+
+    if (result.error) return { success: false, error: result.error.message };
+    const sneaker = result.data;
     if (!sneaker) return { success: false, error: "Sneaker could not be created." };
 
     revalidatePath("/");
-    return { success: true, data: sneaker as Sneaker };
+    return { success: true, data: normalizeSneaker(sneaker), ...(warning ? { warning } : {}) };
   } catch (error) {
     return {
       success: false,
@@ -177,19 +201,39 @@ export async function updateSneaker(
 
   try {
     const adminSupabase = getSupabaseAdmin();
-    const { data: sneaker, error } = await adminSupabase
+    let result = await adminSupabase
       .from("sneakers")
       .update(payload)
       .eq("id", id.trim())
       .select("*")
       .maybeSingle();
 
-    if (error) return { success: false, error: error.message };
+    let warning: string | undefined;
+    if (result.error && isMissingCategoryColumn(result.error)) {
+      const { category, ...legacyPayload } = payload;
+      void category;
+      if (Object.keys(legacyPayload).length === 0) {
+        return {
+          success: false,
+          error: "The database lacks the category column. Apply database-schema.sql before changing release categories.",
+        };
+      }
+      result = await adminSupabase
+        .from("sneakers")
+        .update(legacyPayload)
+        .eq("id", id.trim())
+        .select("*")
+        .maybeSingle();
+      warning = "Release updated, but the category change was not stored. Apply database-schema.sql to enable category storage.";
+    }
+
+    if (result.error) return { success: false, error: result.error.message };
+    const sneaker = result.data;
     if (!sneaker) return { success: false, error: "Sneaker not found." };
 
     revalidatePath("/");
     revalidatePath(`/sneakers/${id.trim()}`);
-    return { success: true, data: sneaker as Sneaker };
+    return { success: true, data: normalizeSneaker(sneaker), ...(warning ? { warning } : {}) };
   } catch (error) {
     return {
       success: false,

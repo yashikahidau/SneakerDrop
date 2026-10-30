@@ -24,10 +24,15 @@ function WaitlistDialog({ sneaker, onClose }: { sneaker: Sneaker; onClose: () =>
     event.preventDefault();
     if (!valid) return;
     setLoading(true); setMessage("");
-    const result = await joinWaitlist(sneaker.id, email.trim());
-    setLoading(false);
-    if (result.success) setSuccess(true);
-    setMessage(result.message);
+    try {
+      const result = await joinWaitlist(sneaker.id, email.trim());
+      if (result.success) setSuccess(true);
+      setMessage(result.message);
+    } catch {
+      setMessage("Your request could not be submitted. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

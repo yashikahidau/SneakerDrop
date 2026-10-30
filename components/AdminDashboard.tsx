@@ -11,8 +11,10 @@ import { getWaitlistSubmissions } from "@/actions/waitlist-actions";
 import { logoutAdmin } from "@/actions/admin-auth-actions";
 import ModalPortal from "@/components/ModalPortal";
 
-const emptyForm: SneakerCreateInput = {
-  name: "", tagline: "", category: "Footwear", price: 0, image_url: "", description: "",
+type SneakerFormState = Omit<SneakerCreateInput, "price"> & { price: string };
+
+const emptyForm: SneakerFormState = {
+  name: "", tagline: "", category: "Footwear", price: "", image_url: "", description: "",
   material_notes: "", construction_notes: "", availability_status: "coming_soon",
 };
 
@@ -31,7 +33,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState<"inventory" | "waitlist">("inventory");
   const [sneakers, setSneakers] = useState<Sneaker[]>([]);
   const [submissions, setSubmissions] = useState<WaitlistSubmission[]>([]);
-  const [form, setForm] = useState<SneakerCreateInput>(emptyForm);
+  const [form, setForm] = useState<SneakerFormState>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Sneaker | null>(null);
@@ -79,18 +81,24 @@ export default function AdminDashboard() {
   const openCreate = () => { setEditingId(null); setForm({ ...emptyForm }); setEditorOpen(true); setMessage(""); };
   const openEdit = (sneaker: Sneaker) => {
     setEditingId(sneaker.id);
-    setForm({ name: sneaker.name, tagline: sneaker.tagline, category: sneaker.category, price: sneaker.price, image_url: sneaker.image_url, description: sneaker.description, material_notes: sneaker.material_notes ?? "", construction_notes: sneaker.construction_notes ?? "", availability_status: sneaker.availability_status });
+    setForm({ name: sneaker.name, tagline: sneaker.tagline, category: sneaker.category, price: String(sneaker.price), image_url: sneaker.image_url, description: sneaker.description, material_notes: sneaker.material_notes ?? "", construction_notes: sneaker.construction_notes ?? "", availability_status: sneaker.availability_status });
     setEditorOpen(true);
     setMessage("");
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const price = Number(form.price);
+    if (!form.price.trim() || !Number.isFinite(price) || price < 0) {
+      setMessage("Enter a valid non-negative price.");
+      return;
+    }
     setSaving(true); setMessage(""); setNotice("");
     try {
-      const result = editingId ? await updateSneaker(editingId, form) : await createSneaker(form);
+      const payload: SneakerCreateInput = { ...form, price };
+      const result = editingId ? await updateSneaker(editingId, payload) : await createSneaker(payload);
       if (!result.success) { setMessage(result.error ?? "The sneaker could not be saved."); return; }
-      setNotice(editingId ? "Release updated." : "Release added to the catalogue.");
+      setNotice(result.warning ?? (editingId ? "Release updated." : "Release added to the catalogue."));
       setEditorOpen(false); setForm({ ...emptyForm }); setEditingId(null);
       await refreshSneakers();
     } catch {
@@ -233,7 +241,7 @@ export default function AdminDashboard() {
             <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col"><div className="flex-1 space-y-5 overflow-y-auto px-5 py-6 sm:px-8">
               <div className="grid gap-4 sm:grid-cols-2"><Field label="Product name"><input required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Aero Form 01" /></Field><Field label="Category"><input required maxLength={60} value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="Performance / Lifestyle" /></Field></div>
               <Field label="Editorial tagline"><input required maxLength={160} value={form.tagline} onChange={(event) => setForm({ ...form, tagline: event.target.value })} placeholder="A study in motion" /></Field>
-              <div className="grid gap-4 sm:grid-cols-2"><Field label="Price (USD)"><input required type="number" min="0" step="0.01" value={form.price} onChange={(event) => setForm({ ...form, price: Number(event.target.value) })} /></Field><Field label="Availability"><select value={form.availability_status} onChange={(event) => setForm({ ...form, availability_status: event.target.value as AvailabilityStatus })}>{statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></Field></div>
+              <div className="grid gap-4 sm:grid-cols-2"><Field label="Price (USD)"><input required type="number" min="0" step="0.01" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} /></Field><Field label="Availability"><select value={form.availability_status} onChange={(event) => setForm({ ...form, availability_status: event.target.value as AvailabilityStatus })}>{statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></Field></div>
               <Field label="Product image URL"><input required type="url" value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} placeholder="https://…" /></Field>
               {form.image_url && <div className="aspect-[16/7] overflow-hidden border border-white/10 bg-white/[.03]"><img src={form.image_url} alt="Product preview" className="h-full w-full object-cover" onError={(event) => { event.currentTarget.style.opacity = "0.2"; }} /></div>}
               <Field label="Description"><textarea required rows={4} maxLength={2000} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></Field>
