@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, X } from "lucide-react";
 import type { Sneaker } from "@/types";
+import ModalPortal from "@/components/ModalPortal";
 
 interface Props {
   snk: Sneaker | null;
@@ -34,51 +35,19 @@ export default function SneakerModal({ snk, onClose, onJoin }: Props) {
 }
 
 function SneakerQuickView({ sneaker, onClose, onRequestAccess }: { sneaker: Sneaker; onClose: () => void; onRequestAccess: (sneaker: Sneaker) => void }) {
-  const dialog = useRef<HTMLElement>(null);
-  const closeButton = useRef<HTMLButtonElement>(null);
   const price = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(sneaker.price);
   const releaseDate = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(sneaker.created_at));
   const soldOut = sneaker.availability_status === "sold_out" || sneaker.availability_status === "archived";
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const keyboard = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const focusable = dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])');
-      if (!focusable?.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", keyboard);
-    closeButton.current?.focus();
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", keyboard);
-      previousFocus?.focus({ preventScroll: true });
-    };
-  }, [onClose]);
 
   const requestAccess = () => {
     onRequestAccess(sneaker);
   };
 
   return (
-    <motion.div className="pointer-events-auto fixed inset-0 z-[100] flex h-[100svh] w-screen justify-center overflow-y-auto bg-black/80 p-0 backdrop-blur-2xl sm:p-4 lg:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <motion.section ref={dialog} role="dialog" aria-modal="true" aria-labelledby="quick-view-title" initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.985 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="relative my-auto grid min-h-full w-full max-w-[1500px] overflow-hidden border border-white/10 bg-[#101012]/95 shadow-[0_40px_140px_rgba(0,0,0,.65)] lg:min-h-[min(850px,calc(100svh-4rem))] lg:grid-cols-[1.05fr_.95fr]">
-        <button ref={closeButton} type="button" onClick={onClose} aria-label="Close product details" className="absolute right-4 top-4 z-30 grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-black/50 text-white/75 backdrop-blur-xl transition-colors hover:border-[#F0D98C]/50 hover:text-[#F0D98C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#F0D98C] active:scale-95 sm:right-6 sm:top-6"><X size={19} /></button>
+    <ModalPortal onClose={onClose}>
+      <motion.div className="pointer-events-auto fixed inset-0 z-[100] flex h-[100svh] w-screen justify-center overflow-y-auto bg-black/80 p-0 backdrop-blur-md sm:p-4 lg:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <motion.section role="dialog" aria-modal="true" aria-labelledby="quick-view-title" initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.985 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="relative my-auto grid min-h-full w-full max-w-[1500px] overflow-hidden border border-white/10 bg-[#101012]/95 shadow-[0_40px_140px_rgba(0,0,0,.65)] lg:min-h-[min(850px,calc(100svh-4rem))] lg:grid-cols-[1.05fr_.95fr]">
+        <button type="button" onClick={onClose} aria-label="Close product details" className="absolute right-4 top-4 z-30 grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-black/50 text-white/75 backdrop-blur-xl transition-colors hover:border-[#F0D98C]/50 hover:text-[#F0D98C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#F0D98C] active:scale-95 sm:right-6 sm:top-6"><X size={19} /></button>
 
         <div className="relative min-h-[44svh] overflow-hidden bg-[radial-gradient(circle_at_50%_42%,#2b2b2e_0%,#141416_62%,#09090b_100%)] sm:min-h-[52svh] lg:min-h-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -121,6 +90,7 @@ function SneakerQuickView({ sneaker, onClose, onRequestAccess }: { sneaker: Snea
           </div>
         </div>
       </motion.section>
-    </motion.div>
+      </motion.div>
+    </ModalPortal>
   );
 }

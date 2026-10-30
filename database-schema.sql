@@ -37,6 +37,21 @@ create index if not exists waitlist_sneaker_id_idx on public.waitlist(sneaker_id
 create index if not exists waitlist_created_at_idx on public.waitlist(created_at desc);
 create index if not exists sneakers_created_at_idx on public.sneakers(created_at desc);
 
+-- Keep the public catalogue synchronized with product changes made in the Atelier.
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime'
+         and schemaname = 'public'
+         and tablename = 'sneakers'
+     ) then
+    execute 'alter publication supabase_realtime add table public.sneakers';
+  end if;
+end;
+$$;
+
 alter table public.sneakers enable row level security;
 alter table public.waitlist enable row level security;
 

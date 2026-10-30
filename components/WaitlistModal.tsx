@@ -1,9 +1,10 @@
 ﻿"use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { joinWaitlist } from "@/actions/waitlist-actions";
 import type { Sneaker } from "@/types";
+import ModalPortal from "@/components/ModalPortal";
 
 interface Props { snk: Sneaker | null; onClose: () => void; }
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,14 +20,6 @@ function WaitlistDialog({ sneaker, onClose }: { sneaker: Sneaker; onClose: () =>
   const [message, setMessage] = useState("");
   const valid = emailPattern.test(email.trim()) && email.trim().length <= 254;
 
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", onKey); };
-  }, [onClose]);
-
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!valid) return;
@@ -38,7 +31,8 @@ function WaitlistDialog({ sneaker, onClose }: { sneaker: Sneaker; onClose: () =>
   };
 
   return (
-        <motion.div className="pointer-events-auto fixed inset-0 z-[110] flex items-end justify-center overflow-y-auto bg-black/75 p-0 backdrop-blur-xl sm:items-center sm:p-4 md:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <ModalPortal onClose={onClose}>
+        <motion.div className="pointer-events-auto fixed inset-0 z-[110] flex items-end justify-center overflow-y-auto bg-black/80 p-0 backdrop-blur-md sm:items-center sm:p-4 md:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
           <motion.div role="dialog" aria-modal="true" aria-labelledby="waitlist-title" initial={{ opacity: 0, y: 40, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: .98 }} className="relative my-auto max-h-[min(92svh,900px)] w-full max-w-[840px] overflow-y-auto rounded-t-2xl border border-white/10 bg-[#121214]/95 shadow-[0_30px_100px_rgba(0,0,0,.7)] backdrop-blur-2xl sm:rounded-sm md:grid md:grid-cols-[.75fr_1fr]">
             <button onClick={onClose} aria-label="Close waitlist" className="absolute right-3 top-3 z-20 grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-black/60 text-white transition-colors hover:border-[#F0D98C]/50 hover:text-[#F0D98C] active:scale-95 sm:right-4 sm:top-4"><X size={18} /></button>
             <div className="relative hidden min-h-[510px] overflow-hidden md:block">
@@ -76,5 +70,6 @@ function WaitlistDialog({ sneaker, onClose }: { sneaker: Sneaker; onClose: () =>
             </div>
           </motion.div>
         </motion.div>
+    </ModalPortal>
   );
 }

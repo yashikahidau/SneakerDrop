@@ -4,10 +4,16 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Loader() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem("hasVisited") === "true") return;
+    } catch {
+      // Storage can be unavailable in private browsing; the intro still runs once per mount.
+    }
+
     const started = performance.now();
     const duration = 1450;
     let frame = 0;
@@ -17,10 +23,20 @@ export default function Loader() {
       const elapsed = now - started;
       setProgress(Math.min(100, Math.round((elapsed / duration) * 100)));
       if (elapsed < duration) frame = requestAnimationFrame(tick);
-      else timeout = window.setTimeout(() => setVisible(false), 180);
+      else timeout = window.setTimeout(() => {
+        try {
+          window.sessionStorage.setItem("hasVisited", "true");
+        } catch {
+          // The intro has completed even when session storage is unavailable.
+        }
+        setVisible(false);
+      }, 180);
     };
 
-    frame = requestAnimationFrame(tick);
+    frame = requestAnimationFrame(() => {
+      setVisible(true);
+      frame = requestAnimationFrame(tick);
+    });
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(timeout);

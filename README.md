@@ -58,7 +58,7 @@ The bootstrap and upgrade script is [`database-schema.sql`](./database-schema.sq
 | `email` | `text` | Required; normalized to lowercase by the waitlist action |
 | `created_at` | `timestamptz` | Required UTC submission timestamp |
 
-The unique constraint on `(sneaker_id, email)` prevents duplicate signups for the same release at the database level. The application maps PostgreSQL unique-violation responses to a clear duplicate-signup message. Indexes support release lookup and newest-first catalogue/submission queries. Archived products remain available to administrators and are excluded from the public catalogue.
+The unique constraint on `(sneaker_id, email)` prevents duplicate signups for the same release at the database level. The application maps PostgreSQL unique-violation responses to a clear duplicate-signup message. Indexes support release lookup and newest-first catalogue/submission queries. The schema adds `sneakers` to Supabase Realtime when that publication is available, so public catalogues receive inserts, edits, archives, and removals live. Archived products remain available to administrators and are excluded from the public catalogue.
 
 RLS is enabled on both tables. The schema grants public and authenticated users read access to sneaker rows and insert access to waitlist rows. It does not create public waitlist read, update, or delete policies. Administrative data operations use the server-only service-role client after signed-session authorization; the service-role key bypasses RLS and must never be exposed to the browser.
 

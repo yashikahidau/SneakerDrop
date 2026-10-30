@@ -164,6 +164,20 @@ body {
   opacity: 1;
 }
 
+html.modal-open,
+body.modal-open {
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+body.modal-open > [data-modal-layer] {
+  pointer-events: auto !important;
+}
+
+body.modal-open > :not([data-modal-layer]) {
+  pointer-events: none !important;
+}
+
 @media (max-width: 767px) {
   .text-outline { -webkit-text-stroke-width: 1px; }
 }

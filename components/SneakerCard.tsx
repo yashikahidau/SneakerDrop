@@ -113,16 +113,16 @@ export default function SneakerCard({ snk, index, layout, onView }: Props) {
         <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0 z-30" style={{ backgroundImage: spotlight, opacity: springOpacity }} />
 
         {cinematic ? (
-          <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col justify-end gap-4 p-5 sm:p-8 md:flex-row md:items-end md:justify-between md:p-10 ${layout === "feature" ? "lg:p-14" : "lg:p-10"}`}>
-            <div className="max-w-3xl">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex flex-col justify-end">
+            <div className={`px-5 pt-5 sm:px-8 sm:pt-8 md:px-10 md:pt-10 ${layout === "feature" ? "lg:px-14 lg:pt-14" : "lg:px-10 lg:pt-10"}`}>
               <p className="mb-3 text-[9px] font-semibold uppercase tracking-[.28em] text-[#F0D98C] sm:text-[10px] sm:tracking-[.35em]">Edition 01 / Archival <span className="mx-2 text-white/40">·</span>{status.label}</p>
               <p className="mb-2 max-w-xl text-[9px] uppercase tracking-[.2em] text-white/65 sm:text-[10px]">{snk.tagline}</p>
               <h3 className={`break-words font-display font-bold uppercase leading-[.86] tracking-[-.07em] text-white ${layout === "feature" ? "text-[clamp(2.3rem,8vw,7.2rem)]" : "text-[clamp(2rem,6vw,5rem)]"}`}>{snk.name}</h3>
               <p className="mt-4 hidden max-w-xl text-sm leading-6 text-white/60 md:block">{snk.description}</p>
             </div>
-            <div className="flex shrink-0 items-end justify-between gap-8 md:flex-col md:items-end md:gap-4">
-              <p className="font-display text-xl font-semibold text-[#F0D98C] sm:text-2xl">{price}</p>
-              <span className="inline-flex min-h-11 items-center gap-3 border-b border-white/60 pb-2 text-[9px] font-bold uppercase tracking-[.2em] text-white transition-colors group-hover:border-[#F0D98C] group-hover:text-[#F0D98C]">Explore release<ArrowUpRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" /></span>
+            <div className="pointer-events-auto flex w-full items-center justify-between gap-4 overflow-hidden px-6 pb-6">
+              <p className="shrink-0 font-display text-xl font-semibold text-[#F0D98C] sm:text-2xl">{price}</p>
+              <span className="inline-flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap border-b border-white/60 pb-2 text-[9px] font-bold uppercase tracking-[.2em] text-white transition-colors group-hover:border-[#F0D98C] group-hover:text-[#F0D98C]">Explore release<ArrowUpRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" /></span>
             </div>
           </div>
         ) : (

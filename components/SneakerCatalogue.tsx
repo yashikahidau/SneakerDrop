@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getSneakers } from "@/actions/sneaker-actions";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 import type { Sneaker } from "@/types";
 import SneakerCard, { type SneakerCardLayout } from "./SneakerCard";
 import SneakerModal from "./SneakerModal";
@@ -30,14 +31,51 @@ export default function SneakerCatalogue() {
 
   useEffect(() => {
     let mounted = true;
-    getSneakers()
-      .then((result) => {
+    let channel: ReturnType<typeof supabaseBrowser.channel> | null = null;
+
+    const loadCatalogue = async () => {
+      try {
+        const result = await getSneakers();
         if (!mounted) return;
         if (result.success) setSneakers(result.data ?? []);
         else setError(result.error ?? "Unable to load the collection.");
-      })
-      .finally(() => { if (mounted) setLoading(false); });
-    return () => { mounted = false; };
+      } catch {
+        if (mounted) setError("Unable to load the collection. Please refresh to try again.");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+
+      if (!mounted) return;
+      channel = supabaseBrowser
+        .channel("public-sneaker-catalogue")
+        .on("postgres_changes", { event: "*", schema: "public", table: "sneakers" }, (payload) => {
+          if (payload.eventType === "DELETE") {
+            const removedId = (payload.old as Partial<Sneaker>).id;
+            if (removedId) setSneakers((current) => current.filter((sneaker) => sneaker.id !== removedId));
+            return;
+          }
+
+          const updated = payload.new as unknown as Sneaker;
+          if (!updated.id) return;
+          setSneakers((current) => {
+            if (updated.availability_status === "archived") {
+              return current.filter((sneaker) => sneaker.id !== updated.id);
+            }
+            const existing = current.some((sneaker) => sneaker.id === updated.id);
+            const next = existing
+              ? current.map((sneaker) => sneaker.id === updated.id ? updated : sneaker)
+              : [updated, ...current];
+            return next.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+          });
+        })
+        .subscribe();
+    };
+
+    void loadCatalogue();
+    return () => {
+      mounted = false;
+      if (channel) void supabaseBrowser.removeChannel(channel);
+    };
   }, []);
 
   const openWaitlist = useCallback((sneaker: Sneaker) => {

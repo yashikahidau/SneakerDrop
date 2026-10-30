@@ -55,7 +55,7 @@ export default function CustomCursor() {
       if (!(event.target instanceof Element)) return;
       const target = event.target;
       const labelTarget = target.closest<HTMLElement>("[data-cursor-label]");
-      const visualTarget = target.closest(".sneaker-card, .sneaker-card img, [data-cursor='view']");
+      const visualTarget = target.closest(".sneaker-card, .sneaker-card img, [data-cursor='view'], [data-cursor-label]");
       const interactiveTarget = target.closest("a, button, input, [data-cursor='active'], .sneaker-card");
       const requestedLabel = labelTarget?.dataset.cursorLabel?.toUpperCase();
       setLabel(visualTarget ? requestedLabel === "DRAG" ? "DRAG" : requestedLabel === "EXPLORE" ? "EXPLORE" : "VIEW" : null);
