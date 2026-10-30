@@ -123,6 +123,10 @@ The two `NEXT_PUBLIC_` values are used by the browser-facing Supabase client. Ke
 
 The admin route and server actions verify an HMAC-signed session stored in an HTTP-only, same-site cookie. Sessions expire after eight hours; cookies are marked secure in production. Admin actions use the service-role Supabase client only after validating the session. The shared-password approach is intended for a small single-admin deployment and does not provide multi-user roles, MFA, or an identity-provider workflow.
 
+## Evaluator admin access
+
+Open [`/admin`](https://sneaker-drop-neon.vercel.app/admin) and sign in with the demo password `SneakerDrop2026!`. Before evaluation, set the Vercel project’s `ADMIN_PASSWORD` environment variable to this same value for the Production environment, then redeploy so the live site receives the updated setting. This is a public demo credential; replace it after judging.
+
 ## Deployment
 
 Deploy the repository to Vercel (or another platform that supports the required Next.js runtime), configure all five environment variables, and ensure the Supabase schema and RLS policies are installed.
