@@ -14,8 +14,8 @@ import ModalPortal from "@/components/ModalPortal";
 type SneakerFormState = Omit<SneakerCreateInput, "price"> & { price: string };
 
 const emptyForm: SneakerFormState = {
-  name: "", tagline: "", category: "Footwear", price: "", image_url: "", description: "",
-  material_notes: "", construction_notes: "", availability_status: "coming_soon",
+  name: "", tagline: "", price: "", image_url: "", description: "",
+  availability_status: "coming_soon",
 };
 
 const statusOptions: { value: AvailabilityStatus; label: string; dot: string }[] = [
@@ -75,13 +75,13 @@ export default function AdminDashboard() {
   const visibleSneakers = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     if (!query) return sneakers;
-    return sneakers.filter((sneaker) => [sneaker.name, sneaker.tagline, sneaker.category].some((value) => value.toLocaleLowerCase().includes(query)));
+    return sneakers.filter((sneaker) => [sneaker.name, sneaker.tagline, sneaker.category].some((value) => value?.toLocaleLowerCase().includes(query) ?? false));
   }, [search, sneakers]);
 
   const openCreate = () => { setEditingId(null); setForm({ ...emptyForm }); setEditorOpen(true); setMessage(""); };
   const openEdit = (sneaker: Sneaker) => {
     setEditingId(sneaker.id);
-    setForm({ name: sneaker.name, tagline: sneaker.tagline, category: sneaker.category, price: String(sneaker.price), image_url: sneaker.image_url, description: sneaker.description, material_notes: sneaker.material_notes ?? "", construction_notes: sneaker.construction_notes ?? "", availability_status: sneaker.availability_status });
+    setForm({ name: sneaker.name, tagline: sneaker.tagline, price: String(sneaker.price), image_url: sneaker.image_url, description: sneaker.description, availability_status: sneaker.availability_status });
     setEditorOpen(true);
     setMessage("");
   };
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
       const payload: SneakerCreateInput = { ...form, price };
       const result = editingId ? await updateSneaker(editingId, payload) : await createSneaker(payload);
       if (!result.success) { setMessage(result.error ?? "The sneaker could not be saved."); return; }
-      setNotice(result.warning ?? (editingId ? "Release updated." : "Release added to the catalogue."));
+      setNotice(editingId ? "Release updated." : "Release added to the catalogue.");
       setEditorOpen(false); setForm({ ...emptyForm }); setEditingId(null);
       await refreshSneakers();
     } catch {
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
                     <div className="min-w-0 flex-1">
                       <p className="break-words font-display text-sm font-bold uppercase leading-tight tracking-[-.02em] text-white">{sneaker.name}</p>
                       <p className="mt-1 break-words text-[10px] leading-4 text-white/40">{sneaker.tagline}</p>
-                      <span className="mt-2 inline-flex max-w-full break-words border border-white/10 bg-white/[.025] px-2 py-1 text-[8px] uppercase tracking-[.12em] text-white/55">{sneaker.category}</span>
+                      {sneaker.category && <span className="mt-2 inline-flex max-w-full break-words border border-white/10 bg-white/[.025] px-2 py-1 text-[8px] uppercase tracking-[.12em] text-white/55">{sneaker.category}</span>}
                     </div>
                     <p className="shrink-0 self-start font-display text-sm font-semibold text-[#F0D98C]">{currency.format(sneaker.price)}</p>
                   </div>
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                 <thead><tr className="border-b border-white/[.08] text-[9px] uppercase tracking-[.18em] text-white/35"><th className="px-5 py-4 font-medium sm:px-6">Product</th><th className="px-4 py-4 font-medium">Category</th><th className="px-4 py-4 font-medium">Price</th><th className="px-4 py-4 font-medium">Availability</th><th className="px-4 py-4 font-medium">Added</th><th className="px-5 py-4 text-right font-medium sm:px-6">Manage</th></tr></thead>
                 <tbody>{visibleSneakers.map((sneaker, index) => <motion.tr key={sneaker.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index * .035, .28) }} className="group border-b border-white/[.055] transition-colors duration-300 hover:bg-[#F0D98C]/[.035]">
                   <td className="px-5 py-4 sm:px-6"><div className="flex items-center gap-3"><div className="h-12 w-14 shrink-0 overflow-hidden border border-white/10 bg-white/[.04]"><img src={sneaker.image_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="min-w-0"><p className="max-w-[270px] truncate font-display text-sm font-bold uppercase tracking-[-.02em] text-white">{sneaker.name}</p><p className="mt-1 max-w-[270px] truncate text-[10px] text-white/35">{sneaker.tagline}</p></div></div></td>
-                  <td className="px-4 py-4"><span className="border border-white/10 bg-white/[.025] px-2.5 py-1.5 text-[9px] uppercase tracking-[.12em] text-white/55">{sneaker.category}</span></td>
+                  <td className="px-4 py-4">{sneaker.category && <span className="border border-white/10 bg-white/[.025] px-2.5 py-1.5 text-[9px] uppercase tracking-[.12em] text-white/55">{sneaker.category}</span>}</td>
                   <td className="px-4 py-4 font-display text-sm font-semibold text-[#F0D98C]">{currency.format(sneaker.price)}</td>
                   <td className="px-4 py-4"><label className="inline-flex items-center gap-2"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusOptions.find((status) => status.value === sneaker.availability_status)?.dot ?? "bg-white/30"}`} /><select aria-label={`Change ${sneaker.name} availability`} value={sneaker.availability_status} disabled={busyStatus === sneaker.id} onChange={(event) => void changeStatus(sneaker, event.target.value as AvailabilityStatus)} className="min-h-11 max-w-[150px] bg-transparent py-2 text-[9px] uppercase tracking-[.1em] text-white/70 outline-none transition-colors hover:text-[#F0D98C] focus:text-[#F0D98C] disabled:opacity-40">{statusOptions.map((option) => <option key={option.value} value={option.value} className="bg-[#121214] text-white">{option.label}</option>)}</select>{busyStatus === sneaker.id && <LoaderCircle size={12} className="animate-spin text-[#F0D98C]" />}</label></td>
                   <td className="px-4 py-4 text-[10px] tabular-nums text-white/40">{dateFormat.format(new Date(sneaker.created_at))}</td>
@@ -239,13 +239,11 @@ export default function AdminDashboard() {
           <motion.aside role="dialog" aria-modal="true" aria-labelledby="editor-title" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 280, damping: 30 }} className="mx-2 flex h-[85svh] max-h-[85vh] w-[calc(100%-1rem)] max-w-lg flex-col overflow-y-auto rounded-t-2xl border border-white/10 bg-[#101012]/95 shadow-[0_-20px_80px_rgba(0,0,0,.55)] backdrop-blur-2xl md:mx-0 md:h-full md:max-h-full md:max-w-2xl md:overflow-hidden md:rounded-t-none md:border-l md:shadow-[-30px_0_100px_rgba(0,0,0,.55)]">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-5 sm:px-8"><div><p className="text-[9px] uppercase tracking-[.3em] text-[#F0D98C]">Product management</p><h2 id="editor-title" className="mt-2 font-display text-2xl font-bold uppercase tracking-[-.04em] sm:text-3xl">{editingId ? "Edit release" : "New release"}</h2></div><button type="button" aria-label="Close editor" onClick={() => setEditorOpen(false)} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/55 transition hover:border-[#F0D98C]/50 hover:text-[#F0D98C] active:scale-95"><X size={17} /></button></div>
             <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col"><div className="flex-1 space-y-5 overflow-y-auto px-5 py-6 sm:px-8">
-              <div className="grid gap-4 sm:grid-cols-2"><Field label="Product name"><input required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Aero Form 01" /></Field><Field label="Category"><input required maxLength={60} value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="Performance / Lifestyle" /></Field></div>
-              <Field label="Editorial tagline"><input required maxLength={160} value={form.tagline} onChange={(event) => setForm({ ...form, tagline: event.target.value })} placeholder="A study in motion" /></Field>
+              <div className="grid gap-4 sm:grid-cols-2"><Field label="Product name"><input required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Aero Form 01" /></Field><Field label="Editorial tagline"><input required maxLength={160} value={form.tagline} onChange={(event) => setForm({ ...form, tagline: event.target.value })} placeholder="A study in motion" /></Field></div>
               <div className="grid gap-4 sm:grid-cols-2"><Field label="Price (USD)"><input required type="number" min="0" step="0.01" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} /></Field><Field label="Availability"><select value={form.availability_status} onChange={(event) => setForm({ ...form, availability_status: event.target.value as AvailabilityStatus })}>{statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></Field></div>
               <Field label="Product image URL"><input required type="url" value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} placeholder="https://…" /></Field>
               {form.image_url && <div className="aspect-[16/7] overflow-hidden border border-white/10 bg-white/[.03]"><img src={form.image_url} alt="Product preview" className="h-full w-full object-cover" onError={(event) => { event.currentTarget.style.opacity = "0.2"; }} /></div>}
               <Field label="Description"><textarea required rows={4} maxLength={2000} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></Field>
-              <div className="grid gap-4 sm:grid-cols-2"><Field label="Material notes (optional)"><textarea rows={3} value={form.material_notes ?? ""} onChange={(event) => setForm({ ...form, material_notes: event.target.value })} /></Field><Field label="Construction notes (optional)"><textarea rows={3} value={form.construction_notes ?? ""} onChange={(event) => setForm({ ...form, construction_notes: event.target.value })} /></Field></div>
             </div><div className="border-t border-white/10 bg-[#101012] px-5 py-4 sm:px-8"><AnimatePresence>{message && <motion.p role="alert" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mb-3 text-xs text-red-200">{message}</motion.p>}</AnimatePresence><div className="flex gap-3"><button type="button" disabled={saving} onClick={() => setEditorOpen(false)} className="min-h-12 flex-1 rounded-full border border-white/10 text-[9px] font-bold uppercase tracking-[.16em] text-white/65 transition hover:border-white/30 hover:text-white disabled:opacity-40">Cancel</button><button type="submit" disabled={saving} className="inline-flex min-h-12 flex-[1.5] items-center justify-center gap-2 rounded-full bg-[#F0D98C] text-[9px] font-bold uppercase tracking-[.16em] text-[#09090b] transition hover:bg-[#D3AE37] disabled:opacity-50">{saving ? <><LoaderCircle size={14} className="animate-spin" />Saving</> : <><Check size={14} />{editingId ? "Save release" : "Publish release"}</>}</button></div></div></form>
           </motion.aside>
         </motion.div></ModalPortal>}

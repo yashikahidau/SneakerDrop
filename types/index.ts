@@ -4,7 +4,7 @@ export interface Sneaker {
   id: string;
   name: string;
   tagline: string;
-  category: string;
+  category?: string | null;
   price: number;
   image_url: string;
   description: string;
@@ -25,5 +25,8 @@ export interface WaitlistSubmission extends WaitlistEntry {
   sneaker: Pick<Sneaker, "id" | "name" | "image_url" | "price" | "availability_status"> | null;
 }
 
-export type SneakerCreateInput = Omit<Sneaker, "id" | "created_at">;
+export type SneakerCreateInput = Pick<
+  Sneaker,
+  "name" | "tagline" | "price" | "image_url" | "description" | "availability_status"
+>;
 export type SneakerUpdateInput = Partial<SneakerCreateInput>;
